@@ -156,7 +156,7 @@
 					//	expect aux[3][2] to be loser index of loser to insert
 					//	expect aux[3][3] to be min position in main chain
 					//	expect aux[3][4] to be max position in main chain
-				aux[3][5] = Math.floor((aux[3][3] + aux[3][4]) / 2);
+				aux[3][5] = Math.ceil((aux[3][3] + aux[3][4]) / 2) - 1;
 				showChoices(aux[1][aux[3][2]], aux[0][aux[3][5]]);
 			break;
 
