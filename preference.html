@@ -24,8 +24,7 @@
 
 	function submitList()
 	{
-		var myList = document.getElementById("list");
-		items = myList.value.split("\n");
+		items = getList().split("\n");
 		n = items.length;
 		if (n > 1)
 		{
@@ -51,6 +50,7 @@
 		}
 		else
 		{
+			var myList = document.getElementById("list");
 			myList.value = myList.value + "  O_o";
 		}
 	}
@@ -233,6 +233,15 @@
 	function showChoices(x, y)
 	{
 		showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "%</p><br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
+	}
+
+	function getList()
+	{
+		// currently, only <font> and <img> are allowed to have attributes
+		var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
+		var regex = '<(?!(' + WHITELIST + '))[^>]*>';
+		var myList = document.getElementById("list").value;
+		return myList.replace(new RegExp(regex, 'gi'), '');
 	}
 
 	function getProgress()
