@@ -1,6 +1,8 @@
 <html>
 <head>
 <title>Preference Revealer</title>
+<script src="lzw.js"></script>
+<script src="base64.js"></script>
 <script type="text/javascript">
 
     //  see Knuth vol.3 SORTING AND SEARCHING for description of Ford-Johnson algorithm (AKA merge insertion)
@@ -241,7 +243,10 @@
         var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
         var regex = '<(?!(' + WHITELIST + '))[^>]*>';
         var myList = document.getElementById("list").value;
-        return myList.replace(new RegExp(regex, 'gi'), '');
+        myList = myList.replace(new RegExp(regex, 'gi'), '');
+        regex = '<(font|img) [^>]*\\([^>]*>';
+        myList = myList.replace(new RegExp(regex, 'gi'), '');
+        return myList;
     }
 
     function getProgress()
@@ -252,6 +257,29 @@
     function makeButton(x, y)
     {
         return "<button type=\"button\" onclick=\"endStep(" + x + ", " + y + ")\">" + items[x] + "</button>";
+    }
+
+    function makeURL()
+    {
+        var myList = getList();
+        myList = saw.lzw.encode(myList);
+        myList = Base64.encode(myList);
+        myList = myList.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
+        var baseURL = location.href.split("?", 1)[0];
+        showURL(baseURL + "?" + myList);
+    }
+
+    function loadQuery()
+    {
+        if (location.search.length > 0 && location.search.charAt(0) == '?')
+        {
+            var listData = location.search.substring(1);
+            listData = listData.replace(/%3D/g, "=").replace(/_/g, "/").replace(/-/g, "+");
+            listData = Base64.decode(listData);
+            listData = saw.lzw.decode(listData);
+            var myList = document.getElementById("list");
+            myList.value = listData;
+        }
     }
 
     function showResults(ids)
@@ -287,6 +315,11 @@
         document.getElementById("text").innerHTML = foo;
     }
 
+    function showURL(foo)
+    {
+        document.getElementById("text").getElementsByTagName('div')[0].innerHTML = "<button type=\"button\" onclick=\"makeURL()\">Generate custom URL</button> <input size=\"64\" value=\""+ foo + "\">";
+    }
+
     function log2(x)
     {
         return Math.log(x) / Math.LN2;
@@ -294,12 +327,13 @@
 
 </script>
 </head>
-<body>
+<body onload="loadQuery()">
 <h1><font color="#dc1a48">Preference Revealer</font></h1>
 <div id="text">
 <p>Enter your items in the field below, each on a separate line.  [<a href="javascript:showExample()">example</a>]  [<a href="javascript:showAbout()">about</a>]</p>
 <p><textarea cols="70" rows="10" id="list"></textarea></p>
-<p><button type="button" onclick="submitList()"><h1>Go!</h1></button></p>
+<p><button type="button" onclick="submitList()" style="width:256"><font size="5">Go!</font></button></p>
+<div><button type="button" onclick="makeURL()">Generate custom URL</button></div>
 </div>
 </body>
 </html>

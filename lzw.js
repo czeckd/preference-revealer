@@ -1,5 +1,9 @@
 (function(){
-    
+
+    // author: Stephen Woods
+    // https://github.com/saw/JS_LZW
+    // see lzw.license.txt for license
+
     var STARTPOINT = 256;
     
     //create "saw" global if not there
