@@ -3,294 +3,294 @@
 <title>Preference Revealer</title>
 <script type="text/javascript">
 
-	//	see Knuth vol.3 SORTING AND SEARCHING for description of Ford-Johnson algorithm (AKA merge insertion)
+    //  see Knuth vol.3 SORTING AND SEARCHING for description of Ford-Johnson algorithm (AKA merge insertion)
 
-	//	negatives for distinguishing from item indices
-	//	first step is PairSORT, which invokes KEYALIGN, which invokes MERGE
-	var PSORT = -1;
-	var KEYSORTODD = -2;
-	var KEYSORTEVEN = -3;
-	var KEYALIGN = -4;
-	var MERGE = -5;
-	var BINSERT = -6;
+    //  negatives for distinguishing from item indices
+    //  first step is PairSORT, which invokes KEYALIGN, which invokes MERGE
+    var PSORT = -1;
+    var KEYSORTODD = -2;
+    var KEYSORTEVEN = -3;
+    var KEYALIGN = -4;
+    var MERGE = -5;
+    var BINSERT = -6;
 
-	var stack = [PSORT];
-	var action;
-	var aux;
-	var n;
-	var items;
-	var comps = 0;
-	var worst;
+    var stack = [PSORT];
+    var action;
+    var aux;
+    var n;
+    var items;
+    var comps = 0;
+    var worst;
 
-	function submitList()
-	{
-		items = getList().split("\n");
-		n = items.length;
-		if (n > 1)
-		{
-			for (var a = 0; a < n; a++)	//	remove whitespace-only lines
-			{
-				while (!(/\S/.test(items[a])))
-				{
-					items.splice(a, 1);
-					n -= 1;
-				}
-			}
-			worst = n * Math.ceil(log2(n * 3 / 4)) - Math.floor((1 << Math.floor(log2(n * 6))) / 3) + Math.floor(log2(n * 6) / 2);
+    function submitList()
+    {
+        items = getList().split("\n");
+        n = items.length;
+        if (n > 1)
+        {
+            for (var a = 0; a < n; a++) //  remove whitespace-only lines
+            {
+                while (!(/\S/.test(items[a])))
+                {
+                    items.splice(a, 1);
+                    n -= 1;
+                }
+            }
+            worst = n * Math.ceil(log2(n * 3 / 4)) - Math.floor((1 << Math.floor(log2(n * 6))) / 3) + Math.floor(log2(n * 6) / 2);
 
-			//	array-shuffling one-liner by Jonas Raoni Soares Silva:	http://jsfromhell.com/array/shuffle
-			for(var j, x, i = n; i; j = parseInt(Math.random() * i), x = items[--i], items[i] = items[j], items[j] = x);
+            //  array-shuffling one-liner by Jonas Raoni Soares Silva:  http://jsfromhell.com/array/shuffle
+            for(var j, x, i = n; i; j = parseInt(Math.random() * i), x = items[--i], items[i] = items[j], items[j] = x);
 
-			aux = new Array(n);
-			for (var k = 0; k < n; k++)
-			{
-				aux[k] = k;
-			}
-			beginStep();
-		}
-		else
-		{
-			var myList = document.getElementById("list");
-			myList.value = myList.value + "  O_o";
-		}
-	}
+            aux = new Array(n);
+            for (var k = 0; k < n; k++)
+            {
+                aux[k] = k;
+            }
+            beginStep();
+        }
+        else
+        {
+            var myList = document.getElementById("list");
+            myList.value = myList.value + "  O_o";
+        }
+    }
 
-	function beginStep()
-	{
-		action = stack.pop();
-		switch (action)
-		{
-			case PSORT:
-					//	expect aux to be array of indices of items to sort
-					//	outer layer still references aux, so don't destroy
-				if (aux.length > 1)
-				{
-					if (aux.length % 2 == 1)
-					{
-						stack.push(aux[0]);
-						stack.push(KEYSORTODD);
-						stack = stack.concat(aux.slice(1));
-					}
-					else
-					{
-						stack.push(KEYSORTEVEN);
-						stack = stack.concat(aux);
-					}
-					aux = [[],[]];
-					showChoices(stack.pop(), stack.pop());
-				}
-				else
-				{
-					beginStep();
-				}
-			break;
+    function beginStep()
+    {
+        action = stack.pop();
+        switch (action)
+        {
+            case PSORT:
+                    //  expect aux to be array of indices of items to sort
+                    //  outer layer still references aux, so don't destroy
+                if (aux.length > 1)
+                {
+                    if (aux.length % 2 == 1)
+                    {
+                        stack.push(aux[0]);
+                        stack.push(KEYSORTODD);
+                        stack = stack.concat(aux.slice(1));
+                    }
+                    else
+                    {
+                        stack.push(KEYSORTEVEN);
+                        stack = stack.concat(aux);
+                    }
+                    aux = [[],[]];
+                    showChoices(stack.pop(), stack.pop());
+                }
+                else
+                {
+                    beginStep();
+                }
+            break;
 
-			case KEYALIGN:	//	reorder losers to match sorted winners
-					//	expect stack[-1][0] to be array of winners of pairwise comparisons
-					//	expect stack[-1][1] to be array of losers of pairwise comparisons, plus odd element if exists
-					//	expect aux to be sorted array of winners
-				var w = aux.length;
-				aux = [aux, new Array(w), new Array(w), [0, 1, 0, 0]];	//	first insertion
-					//	aux[0] is now the main chain
-				var oldaux = stack.pop();
-				var keydict = new Array(n);
-				for (var i = 0; i < w; i++)
-				{
-					keydict[oldaux[0][i]] = oldaux[1][i];
-				}
-				for (var j = 0; j < w; j++)
-				{
-					aux[1][j] = keydict[aux[0][j]];
-					aux[2][j] = 0;
-				}
-				if (w < oldaux[1].length)	//	check for odd element
-				{
-					aux[1][w] = oldaux[1][w];
-				}
-					//	fall through
-			case MERGE:
-					//	expect aux[0] to be the main chain
-					//	expect aux[1] to be post-KEYALIGN array of losers, plus odd element if exists
-					//	expect aux[2] to be array of offsets from old indices to projected indices as main chain grows
-					//	expect aux[3][0] to be k
-					//	expect aux[3][1] to be t_k
-					//	expect aux[3][2] to be loser index of loser to insert
-					//	expect aux[3][3] to be insertion position in main chain
-				aux[0].splice(aux[3][3], 0, aux[1][aux[3][2]]);
-				if ((aux[3][2] == 0) || (aux[3][2] == aux[3][1]))
-				{
-					aux[3][0] += 1;
-					aux[3][1] = (1 << aux[3][0]) - aux[3][1];
-					var l = aux[1].length;
-					if (aux[3][1] < l)
-					{
-						aux[3][2] = Math.min(l - 1, (2 << aux[3][0]) - aux[3][1] - 1);
-						aux[3][3] = 0;
-						aux[3][4] = aux[3][1] + aux[3][2];
-						stack.push(BINSERT);
-					}
-					else
-					{
-						stack.push(aux[0]);
-					}
-				}
-				else
-				{
-					aux[3][2] -= 1;
-					var k = aux[3][2];
-					while (aux[3][1] + k + aux[2][k] >= aux[3][3])	//	while previous insertion affects max position
-					{
-						aux[2][k] += 1;
-						k--;	//	test conveniently fails when we reach old items we don't care about
-					}
-					aux[3][3] = 0;
-					aux[3][4] = aux[3][1] + aux[3][2] + aux[2][aux[3][2]];
-					stack.push(BINSERT);
-				}
-				beginStep();
-			break;
+            case KEYALIGN:  //  reorder losers to match sorted winners
+                    //  expect stack[-1][0] to be array of winners of pairwise comparisons
+                    //  expect stack[-1][1] to be array of losers of pairwise comparisons, plus odd element if exists
+                    //  expect aux to be sorted array of winners
+                var w = aux.length;
+                aux = [aux, new Array(w), new Array(w), [0, 1, 0, 0]];  //  first insertion
+                    //  aux[0] is now the main chain
+                var oldaux = stack.pop();
+                var keydict = new Array(n);
+                for (var i = 0; i < w; i++)
+                {
+                    keydict[oldaux[0][i]] = oldaux[1][i];
+                }
+                for (var j = 0; j < w; j++)
+                {
+                    aux[1][j] = keydict[aux[0][j]];
+                    aux[2][j] = 0;
+                }
+                if (w < oldaux[1].length)   //  check for odd element
+                {
+                    aux[1][w] = oldaux[1][w];
+                }
+                    //  fall through
+            case MERGE:
+                    //  expect aux[0] to be the main chain
+                    //  expect aux[1] to be post-KEYALIGN array of losers, plus odd element if exists
+                    //  expect aux[2] to be array of offsets from old indices to projected indices as main chain grows
+                    //  expect aux[3][0] to be k
+                    //  expect aux[3][1] to be t_k
+                    //  expect aux[3][2] to be loser index of loser to insert
+                    //  expect aux[3][3] to be insertion position in main chain
+                aux[0].splice(aux[3][3], 0, aux[1][aux[3][2]]);
+                if ((aux[3][2] == 0) || (aux[3][2] == aux[3][1]))
+                {
+                    aux[3][0] += 1;
+                    aux[3][1] = (1 << aux[3][0]) - aux[3][1];
+                    var l = aux[1].length;
+                    if (aux[3][1] < l)
+                    {
+                        aux[3][2] = Math.min(l - 1, (2 << aux[3][0]) - aux[3][1] - 1);
+                        aux[3][3] = 0;
+                        aux[3][4] = aux[3][1] + aux[3][2];
+                        stack.push(BINSERT);
+                    }
+                    else
+                    {
+                        stack.push(aux[0]);
+                    }
+                }
+                else
+                {
+                    aux[3][2] -= 1;
+                    var k = aux[3][2];
+                    while (aux[3][1] + k + aux[2][k] >= aux[3][3])  //  while previous insertion affects max position
+                    {
+                        aux[2][k] += 1;
+                        k--;    //  test conveniently fails when we reach old items we don't care about
+                    }
+                    aux[3][3] = 0;
+                    aux[3][4] = aux[3][1] + aux[3][2] + aux[2][aux[3][2]];
+                    stack.push(BINSERT);
+                }
+                beginStep();
+            break;
 
-			case BINSERT:
-					//	expect aux[3][0] to be k
-					//	expect aux[3][1] to be t_k
-					//	expect aux[3][2] to be loser index of loser to insert
-					//	expect aux[3][3] to be min position in main chain
-					//	expect aux[3][4] to be max position in main chain
-				aux[3][5] = Math.ceil((aux[3][3] + aux[3][4]) / 2) - 1;
-				showChoices(aux[1][aux[3][2]], aux[0][aux[3][5]]);
-			break;
+            case BINSERT:
+                    //  expect aux[3][0] to be k
+                    //  expect aux[3][1] to be t_k
+                    //  expect aux[3][2] to be loser index of loser to insert
+                    //  expect aux[3][3] to be min position in main chain
+                    //  expect aux[3][4] to be max position in main chain
+                aux[3][5] = Math.ceil((aux[3][3] + aux[3][4]) / 2) - 1;
+                showChoices(aux[1][aux[3][2]], aux[0][aux[3][5]]);
+            break;
 
-			default:	//	expect to have encountered sorted array
-				if (stack.length > 0)
-				{
-					aux = action;
-					beginStep();
-				}
-				else
-				{
-					showResults(action);
-				}
-		}
-	}
+            default:    //  expect to have encountered sorted array
+                if (stack.length > 0)
+                {
+                    aux = action;
+                    beginStep();
+                }
+                else
+                {
+                    showResults(action);
+                }
+        }
+    }
 
-	function endStep(x, y)
-	{
-		comps++;
-		switch (action)
-		{
-			case PSORT:
-					//	expect aux[0] to be array of winners of pairwise comparisons
-					//	expect aux[1] to be array of losers of pairwise comparisons
-				aux[0].push(x);
-				aux[1].push(y);
-				var popped = stack.pop();
-				if (popped < 0)
-				{
-					if (popped == KEYSORTODD)	//	other possible value is KEYSORTEVEN
-					{
-						aux[1].push(stack.pop());
-					}
-					stack.push(aux);
-					stack.push(KEYALIGN);
-					stack.push(PSORT);	//	recur to sort winners
-					aux = aux[0];
-					beginStep();
-				}
-				else
-				{
-					showChoices(popped, stack.pop());
-				}
-			break;
+    function endStep(x, y)
+    {
+        comps++;
+        switch (action)
+        {
+            case PSORT:
+                    //  expect aux[0] to be array of winners of pairwise comparisons
+                    //  expect aux[1] to be array of losers of pairwise comparisons
+                aux[0].push(x);
+                aux[1].push(y);
+                var popped = stack.pop();
+                if (popped < 0)
+                {
+                    if (popped == KEYSORTODD)   //  other possible value is KEYSORTEVEN
+                    {
+                        aux[1].push(stack.pop());
+                    }
+                    stack.push(aux);
+                    stack.push(KEYALIGN);
+                    stack.push(PSORT);  //  recur to sort winners
+                    aux = aux[0];
+                    beginStep();
+                }
+                else
+                {
+                    showChoices(popped, stack.pop());
+                }
+            break;
 
-			case BINSERT:
-					//	expect aux[3][0] to be k
-					//	expect aux[3][1] to be t_k
-					//	expect aux[3][2] to be loser index of loser to insert
-					//	expect aux[3][3] to be min position in main chain
-					//	expect aux[3][4] to be max position in main chain
-					//	expect aux[3][5] to be main chain index of comparand
-				if (x == aux[1][aux[3][2]])
-				{
-					aux[3][3] = aux[3][5] + 1;
-				}
-				else
-				{
-					aux[3][4] = aux[3][5];
-				}
-				if (aux[3][3] == aux[3][4])
-				{
-					stack.push(MERGE);
-				}
-				else
-				{
-					stack.push(BINSERT);
-				}
-				beginStep();
-			break;
-		}
-	}
+            case BINSERT:
+                    //  expect aux[3][0] to be k
+                    //  expect aux[3][1] to be t_k
+                    //  expect aux[3][2] to be loser index of loser to insert
+                    //  expect aux[3][3] to be min position in main chain
+                    //  expect aux[3][4] to be max position in main chain
+                    //  expect aux[3][5] to be main chain index of comparand
+                if (x == aux[1][aux[3][2]])
+                {
+                    aux[3][3] = aux[3][5] + 1;
+                }
+                else
+                {
+                    aux[3][4] = aux[3][5];
+                }
+                if (aux[3][3] == aux[3][4])
+                {
+                    stack.push(MERGE);
+                }
+                else
+                {
+                    stack.push(BINSERT);
+                }
+                beginStep();
+            break;
+        }
+    }
 
-	function showChoices(x, y)
-	{
-		showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "%</p><br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
-	}
+    function showChoices(x, y)
+    {
+        showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "%</p><br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
+    }
 
-	function getList()
-	{
-		// currently, only <font> and <img> are allowed to have attributes
-		var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
-		var regex = '<(?!(' + WHITELIST + '))[^>]*>';
-		var myList = document.getElementById("list").value;
-		return myList.replace(new RegExp(regex, 'gi'), '');
-	}
+    function getList()
+    {
+        // currently, only <font> and <img> are allowed to have attributes
+        var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
+        var regex = '<(?!(' + WHITELIST + '))[^>]*>';
+        var myList = document.getElementById("list").value;
+        return myList.replace(new RegExp(regex, 'gi'), '');
+    }
 
-	function getProgress()
-	{
-		return Math.floor(100 * comps / worst);
-	}
+    function getProgress()
+    {
+        return Math.floor(100 * comps / worst);
+    }
 
-	function makeButton(x, y)
-	{
-		return "<button type=\"button\" onclick=\"endStep(" + x + ", " + y + ")\">" + items[x] + "</button>";
-	}
+    function makeButton(x, y)
+    {
+        return "<button type=\"button\" onclick=\"endStep(" + x + ", " + y + ")\">" + items[x] + "</button>";
+    }
 
-	function showResults(ids)
-	{
-		var results = new Array(n);
-		for (var i = 0; i < n; i++)
-		{
-			results[i] = items[ids[n - i - 1]];
-		}
-		showHTML("<p>Results, starting from highest preferred:</p><br><p>" + results.join("</p><p>") + "</p>");
-	}
+    function showResults(ids)
+    {
+        var results = new Array(n);
+        for (var i = 0; i < n; i++)
+        {
+            results[i] = items[ids[n - i - 1]];
+        }
+        showHTML("<p>Results, starting from highest preferred:</p><br><p>" + results.join("</p><p>") + "</p>");
+    }
 
-	function showExample()
-	{
-		var myList = document.getElementById("list");
-		if ((myList.value.length == 0) || (myList.value.charAt(0) != "S"))
-		{
-			myList.value = "Sigmund\nTerence\nIjyb\nJessica\nGrinder\nCrazy Yiuf\nPrince Ribbit\nBlork the ork\nDuvessa";
-		}
-		else
-		{
-			myList.value = "<img src=\"http://i.imgur.com/Go5Ng.png\"></img><br>Sigmund\n<img src=\"http://i.imgur.com/i1n7G.png\"></img><br>Terence\n<img src=\"http://i.imgur.com/GyN4c.png\"></img><br>Ijyb\n<img src=\"http://i.imgur.com/dW7VZ.png\"></img><br>Jessica\n<img src=\"http://i.imgur.com/KZ91c.png\"></img><br>Grinder\n<img src=\"http://i.imgur.com/pk4u1.png\"></img><br>Crazy Yiuf\n<img src=\"http://i.imgur.com/jWfwc.png\"></img><br>Prince Ribbit\n<img src=\"http://i.imgur.com/0KXJT.png\"></img><br>Blork the ork\n<img src=\"http://i.imgur.com/wSCs8.png\"></img><br>Duvessa";
-		}
-	}
+    function showExample()
+    {
+        var myList = document.getElementById("list");
+        if ((myList.value.length == 0) || (myList.value.charAt(0) != "S"))
+        {
+            myList.value = "Sigmund\nTerence\nIjyb\nJessica\nGrinder\nCrazy Yiuf\nPrince Ribbit\nBlork the ork\nDuvessa";
+        }
+        else
+        {
+            myList.value = "<img src=\"http://i.imgur.com/Go5Ng.png\"></img><br>Sigmund\n<img src=\"http://i.imgur.com/i1n7G.png\"></img><br>Terence\n<img src=\"http://i.imgur.com/GyN4c.png\"></img><br>Ijyb\n<img src=\"http://i.imgur.com/dW7VZ.png\"></img><br>Jessica\n<img src=\"http://i.imgur.com/KZ91c.png\"></img><br>Grinder\n<img src=\"http://i.imgur.com/pk4u1.png\"></img><br>Crazy Yiuf\n<img src=\"http://i.imgur.com/jWfwc.png\"></img><br>Prince Ribbit\n<img src=\"http://i.imgur.com/0KXJT.png\"></img><br>Blork the ork\n<img src=\"http://i.imgur.com/wSCs8.png\"></img><br>Duvessa";
+        }
+    }
 
-	function showAbout()
-	{
-		showHTML("<p>Preference Revealer sorts a list of items by asking the user to make pairwise comparisons.  It is inspired by <a href=\"http://mainyan.sakura.ne.jp/thsort.html\">T&#333;h&#333;</a> <a href=\"http://freewebs.com/tohosort\">Sort</a>.  Hat tip to pluffei for suggesting a general-purpose version.  Many thanks to Knuth for his in-depth discussion of minimal-comparison sorting.</p><p>Unlike T&#333;h&#333 Sort, which uses merge sort, Preference Revealer uses the Ford-Johnson algorithm, a.k.a. merge insertion, as described in Knuth's <i>The Art of Computer Programming, vol. 3: Sorting and Searching</i>.  Its worst-case makes fewer comparisons than merge sort's.  According to my rather hasty calculations, its average-case also tends to make one or two percent fewer.  Naturally, it probably can't beat most merge sort implementations' best-case (i.e. minimum) comparisons.  Its overhead makes it unsuitable for most practical applications.  See Knuth for details on the algorithm.</p><p>To make it easy to toy with and modify, all the code is contained in this HTML file.  Read more about how Preference Revealer works <a href=\"http://xomnom.com/prefabout.html\">here</a>.</p><p>Refresh the page to reset Preference Revealer.</p><h6><a rel=\"license\" href=\"http://creativecommons.org/licenses/by/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by/3.0/80x15.png\" /></a> <span xmlns:dct=\"http://purl.org/dc/terms/\" href=\"http://purl.org/dc/dcmitype/InteractiveResource\" property=\"dct:title\" rel=\"dct:type\">Preference Revealer</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"http://xomnom.com\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Xomnom</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by/3.0/\">Creative Commons Attribution 3.0 Unported License</a>.</h6>");
-	}
+    function showAbout()
+    {
+        showHTML("<p>Preference Revealer sorts a list of items by asking the user to make pairwise comparisons.  It is inspired by <a href=\"http://mainyan.sakura.ne.jp/thsort.html\">T&#333;h&#333;</a> <a href=\"http://freewebs.com/tohosort\">Sort</a>.  Hat tip to pluffei for suggesting a general-purpose version.  Many thanks to Knuth for his in-depth discussion of minimal-comparison sorting.</p><p>Unlike T&#333;h&#333 Sort, which uses merge sort, Preference Revealer uses the Ford-Johnson algorithm, a.k.a. merge insertion, as described in Knuth's <i>The Art of Computer Programming, vol. 3: Sorting and Searching</i>.  Its worst-case makes fewer comparisons than merge sort's.  According to my rather hasty calculations, its average-case also tends to make one or two percent fewer.  Naturally, it probably can't beat most merge sort implementations' best-case (i.e. minimum) comparisons.  Its overhead makes it unsuitable for most practical applications.  See Knuth for details on the algorithm.</p><p>To make it easy to toy with and modify, all the code is contained in this HTML file.  Read more about how Preference Revealer works <a href=\"http://xomnom.com/prefabout.html\">here</a>.</p><p>Refresh the page to reset Preference Revealer.</p><h6><a rel=\"license\" href=\"http://creativecommons.org/licenses/by/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by/3.0/80x15.png\" /></a> <span xmlns:dct=\"http://purl.org/dc/terms/\" href=\"http://purl.org/dc/dcmitype/InteractiveResource\" property=\"dct:title\" rel=\"dct:type\">Preference Revealer</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"http://xomnom.com\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Xomnom</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by/3.0/\">Creative Commons Attribution 3.0 Unported License</a>.</h6>");
+    }
 
-	function showHTML(foo)
-	{
-		document.getElementById("text").innerHTML = foo;
-	}
+    function showHTML(foo)
+    {
+        document.getElementById("text").innerHTML = foo;
+    }
 
-	function log2(x)
-	{
-		return Math.log(x) / Math.LN2;
-	}
+    function log2(x)
+    {
+        return Math.log(x) / Math.LN2;
+    }
 
 </script>
 </head>
