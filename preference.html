@@ -234,7 +234,7 @@
 
     function showChoices(x, y)
     {
-        showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "%</p><br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
+        showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "<br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
     }
 
     function getList()
@@ -251,7 +251,8 @@
 
     function getProgress()
     {
-        return Math.floor(100 * comps / worst);
+        var progress = Math.floor(100 * comps / worst);
+        return "" + progress + "%</p><div style=\"height:16px;width:" + progress + "%;background-color:00CC00\"></div>";
     }
 
     function makeButton(x, y)
@@ -317,7 +318,7 @@
 
     function showURL(foo)
     {
-        document.getElementById("text").getElementsByTagName('div')[0].innerHTML = "<button type=\"button\" onclick=\"makeURL()\">Generate custom URL</button> <input size=\"64\" value=\""+ foo + "\">";
+        document.getElementById("text").getElementsByTagName('div')[0].innerHTML = "<button type=\"button\" onclick=\"makeURL()\">Generate custom URL for sharing...</button> <input size=\"64\" value=\""+ foo + "\">";
     }
 
     function log2(x)
@@ -332,8 +333,8 @@
 <div id="text">
 <p>Enter your items in the field below, each on a separate line.  [<a href="javascript:showExample()">example</a>]  [<a href="javascript:showAbout()">about</a>]</p>
 <p><textarea cols="70" rows="10" id="list"></textarea></p>
-<p><button type="button" onclick="submitList()" style="width:256"><font size="5">Go!</font></button></p>
-<div><button type="button" onclick="makeURL()">Generate custom URL</button></div>
+<p><button type="button" onclick="submitList()" style="width:192"><font size="5">Go!</font></button></p>
+<div><button type="button" onclick="makeURL()">Generate custom URL for sharing...</button></div>
 </div>
 </body>
 </html>
