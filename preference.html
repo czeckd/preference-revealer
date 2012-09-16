@@ -170,7 +170,7 @@
                 }
                 else
                 {
-                    showResults(action);
+                    showResults(action, true, "undefined");
                 }
         }
     }
@@ -237,16 +237,28 @@
         showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "<br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
     }
 
+    function sanitize(foo, useWhitelist)
+    {
+        if (useWhitelist)
+        {
+            // currently, only <font> and <img> are allowed to have attributes
+            var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
+            var regex = '<(?!(' + WHITELIST + '))[^>]*>';
+            foo = foo.replace(new RegExp(regex, 'gi'), '');
+            regex = '<[^>]*\\([^>]*>';
+            foo = foo.replace(new RegExp(regex, 'gi'), '');
+        }
+        else
+        {
+            var regex = '<[^>]*>';
+            foo = foo.replace(new RegExp(regex, 'gi'), '');
+        }
+        return foo;
+    }
+
     function getList()
     {
-        // currently, only <font> and <img> are allowed to have attributes
-        var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
-        var regex = '<(?!(' + WHITELIST + '))[^>]*>';
-        var myList = document.getElementById("list").value;
-        myList = myList.replace(new RegExp(regex, 'gi'), '');
-        regex = '<(font|img) [^>]*\\([^>]*>';
-        myList = myList.replace(new RegExp(regex, 'gi'), '');
-        return myList;
+        return sanitize(document.getElementById("list").value, true);
     }
 
     function getProgress()
@@ -262,35 +274,71 @@
 
     function makeURL()
     {
+        var baseURL = location.href.split("?", 1)[0];
         var myList = getList();
         myList = saw.lzw.encode(myList);
         myList = Base64.encode(myList);
         myList = myList.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
-        var baseURL = location.href.split("?", 1)[0];
         showURL(baseURL + "?" + myList);
+    }
+
+    function makeResultsURL()
+    {
+        var baseURL = location.href.split("?", 1)[0];
+        var myList = items.join("\n");
+        myList = saw.lzw.encode(myList);
+        myList = Base64.encode(myList);
+        myList = myList.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
+        whoseResults = document.getElementById("myname").value;
+        whoseResults = Base64.encode(whoseResults);
+        whoseResults = whoseResults.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
+        showResultsURL(baseURL + "?" + whoseResults + "&" + myList);
     }
 
     function loadQuery()
     {
         if (location.search.length > 0 && location.search.charAt(0) == '?')
         {
-            var listData = location.search.substring(1);
-            listData = listData.replace(/%3D/g, "=").replace(/_/g, "/").replace(/-/g, "+");
-            listData = Base64.decode(listData);
-            listData = saw.lzw.decode(listData);
-            var myList = document.getElementById("list");
-            myList.value = listData;
+            var ampersand = location.search.indexOf("&");
+            if (ampersand == -1)
+            {
+                var listData = location.search.substring(1);
+                listData = listData.replace(/%3D/g, "=").replace(/_/g, "/").replace(/-/g, "+");
+                listData = Base64.decode(listData);
+                listData = saw.lzw.decode(listData);
+                var myList = document.getElementById("list");
+                myList.value = listData;
+            }
+            else
+            {
+                var whoseResults = location.search.substring(1, ampersand);
+                whoseResults = whoseResults.replace(/%3D/g, "=").replace(/_/g, "/").replace(/-/g, "+");
+                whoseResults = Base64.decode(whoseResults);
+                var listData = location.search.substring(ampersand + 1);
+                listData = listData.replace(/%3D/g, "=").replace(/_/g, "/").replace(/-/g, "+");
+                listData = Base64.decode(listData);
+                listData = saw.lzw.decode(listData);
+                showResults(sanitize(listData, true).split("\n"), false, sanitize(whoseResults, false));
+            }
         }
     }
 
-    function showResults(ids)
+    function showResults(ids, myResults, whoseResults)
     {
-        var results = new Array(n);
-        for (var i = 0; i < n; i++)
+        if (myResults)
         {
-            results[i] = items[ids[n - i - 1]];
+            var results = new Array(n);
+            for (var i = 0; i < n; i++)
+            {
+                results[i] = items[ids[n - i - 1]];
+            }
+            items = results;
+            showHTML("<p>Results, starting from highest preferred:</p><br><p>" + results.join("</p><p>") + "</p><br><div id=\"sharing\">Name: <input size=\"12\" id=\"myname\" value=\"anonymous\"></input> <button type=\"button\" onclick=\"makeResultsURL()\">Generate link to these results...</button></div>");
         }
-        showHTML("<p>Results, starting from highest preferred:</p><br><p>" + results.join("</p><p>") + "</p>");
+        else
+        {
+            showHTML("<p>Results for " + whoseResults + ", starting from highest preferred:</p><br><p>" + ids.join("</p><p>") + "</p><h1><a href=\"preference.html?" + location.search.split("&", 2)[1] + "\">Compare your own preferences...</a></h1>");
+        }
     }
 
     function showExample()
@@ -318,7 +366,12 @@
 
     function showURL(foo)
     {
-        document.getElementById("text").getElementsByTagName('div')[0].innerHTML = "<button type=\"button\" onclick=\"makeURL()\">Generate custom URL for sharing...</button> <input size=\"64\" value=\""+ foo + "\">";
+        document.getElementById("text").getElementsByTagName('div')[0].innerHTML = "<button type=\"button\" onclick=\"makeURL()\">Generate custom link for sharing...</button> <input size=\"64\" value=\""+ foo + "\"></input>";
+    }
+
+    function showResultsURL(foo)
+    {
+        document.getElementById("sharing").innerHTML = "Name: <input size=\"12\" id=\"myname\" value=\"" + sanitize(document.getElementById("myname").value, false) + "\"></input> <button type=\"button\" onclick=\"makeResultsURL()\">Generate link to these results...</button> <input size=\"64\" value=\""+ foo + "\"></input>";
     }
 
     function log2(x)
@@ -334,7 +387,7 @@
 <p>Enter your items in the field below, each on a separate line.  [<a href="javascript:showExample()">example</a>]  [<a href="javascript:showAbout()">about</a>]</p>
 <p><textarea cols="70" rows="10" id="list"></textarea></p>
 <p><button type="button" onclick="submitList()" style="width:192"><font size="5">Go!</font></button></p>
-<div><button type="button" onclick="makeURL()">Generate custom URL for sharing...</button></div>
+<div><button type="button" onclick="makeURL()">Generate custom link for sharing...</button></div>
 </div>
 </body>
 </html>
