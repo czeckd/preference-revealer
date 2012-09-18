@@ -1,0 +1,82 @@
+Preference Revealer v1.0
+
+https://github.com/Xomnom/Preference-Revealer
+
+v0.0, 2012-2-17:    Original version.
+v0.1, 2012-7-31:    Now strips non-whitelisted HTML tags when processing input;
+                      also minor performance tweak (original version had worse
+                      worst-case performance than is correct (by 1% or so)).
+v1.0, 2012-9-18:    Custom links (using query string); progress bar;
+                      updated explanatory text (most of which is also in here).
+
+Preference Revealer sorts a list of items by asking you to make pairwise comparisons.
+(This level of decomposition isn't always appropriate, but sometimes it's invaluable.)
+
+Click [_example_] twice to see an additional example.
+After inputting a list, click the "Generate custom link for sharing..." button for
+a link to a version of the page already filled out with your list.
+The results page has a similar button for sharing your results.
+
+Inspired by Tōhō Sort[0][1].
+Hat tip to pluffei for suggesting a general-purpose version.
+Many thanks to Knuth for his in-depth discussion of minimal-comparison sorting.
+
+[0] http://mainyan.sakura.ne.jp/thsort.html
+[1] http://freewebs.com/tohosort
+
+Unlike Tōhō Sort, which uses merge sort, Preference Revealer uses the
+Ford-Johnson algorithm, a.k.a. merge insertion, as described in Knuth's
+The Art of Computer Programming, vol. 3: Sorting and Searching.
+Its worst-case makes fewer comparisons than merge sort's.  According to my rather
+hasty calculations, its average-case also tends to make one or two percent fewer.
+Naturally, it probably can't beat most merge sort implementations' best-case
+(i.e. minimum) comparisons.  Its overhead makes it unsuitable for most practical
+applications.  Here I'll describe enough of the algorithm to determine it,
+but see Knuth for more details.
+
+    First, we group all the items into pairs, and compare each pair to find
+    the higher item; there may be an odd one out, which we'll get back to.
+
+    Then, we recur the algorithm to sort the pairs by their higher items.
+    After that finishes, call the sequence of higher items the main chain;
+    its elements are initially a_1 through a_k, where a_k is the highest of
+    the higher items.
+
+    It remains to insert the lower items into the main chain using binary insertion.
+
+    We'll continue to call the higher items as a_1 through a_n regardless of
+    shifts in position.  We'll call the corresponding lower items b_1 through b_n.
+    For each b_i, the lowest possible insertion position is at the bottom, and
+    the highest is right under a_i, wherever that happens to be.  So if we had
+    an odd item, it makes sense now to call it b_n+1, befitting where it could
+    possibly be inserted.
+
+    It turns out that a very efficient ordering is to insert b_1 for free,
+    then insert as many items as possible for at most two comparisons each
+    (b_3 then b_2, because after b_2 it might cost three for b_3), then as
+    many as possible for at most three each (b_5 then b_4), then for four
+    (b_11 down to b_6), and so on, skipping nonexisting b_i, until done.
+
+To check your understanding of the algorithm, try following along on pencil
+and paper.  Optionally, you can save the files locally and comment out
+the one-liner that shuffles the initial input.
+
+One other tricky portion is the code that keeps track of where the a_i get shifted.
+A conservative estimate would preserve the worst-case performance, but by updating
+the highest possible insertion position based on where the previous insertions
+actually go, a few comparisons can be spared here and there, which presumably
+also is presumed by Knuth when he calculates the average-case.
+
+This implementation started out using a stack of tokens to track state across
+user inputs (inspired by Wiz Zumwalt[2]), but then I started shoving data into
+auxiliary variables, because I couldn't figure out how to make everything work
+cleanly with just Forth-isms.  The resulting mess, of course, is worse than
+having a panoply of variables to hold the state in the first place.  Regardless,
+I currently have no plans to rewrite the guts, since everything already works.
+
+[2] http://baen.com/library/0671878468/0671878468.htm
+
+Preference Revealer by Xomnom is licensed under the Creative Commons
+Attribution 3.0 Unported License.  To view a copy of this license, visit
+http://creativecommons.org/licenses/by/3.0/ or send a letter to Creative
+Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
