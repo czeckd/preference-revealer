@@ -1,4 +1,4 @@
-Preference Revealer v1.0
+Preference Revealer v1.1
 
 https://github.com/Xomnom/Preference-Revealer
 
@@ -8,6 +8,10 @@ v0.1, 2012-7-31:    Now strips non-whitelisted HTML tags when processing input;
                       worst-case performance than is correct (by 1% or so)).
 v1.0, 2012-9-18:    Custom links (using query string); progress bar;
                       updated explanatory text (most of which is also in here).
+v1.1, 2012-9-27:    When results are reached, update location bar using
+                      window.history.pushState (which only works in some modern
+                      browsers), in case user expects it to contain permalink;
+                      TODO: warn user when this fails.
 
 Preference Revealer sorts a list of items by asking you to make pairwise comparisons.
 (This level of decomposition isn't always appropriate, but sometimes it's invaluable.)
