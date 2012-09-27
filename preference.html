@@ -28,16 +28,16 @@
     {
         items = getList().split("\n");
         n = items.length;
+        for (var a = 0; a < n; a++) //  remove whitespace-only lines
+        {
+            while (!(/\S/.test(items[a])))
+            {
+                items.splice(a, 1);
+                n -= 1;
+            }
+        }
         if (n > 1)
         {
-            for (var a = 0; a < n; a++) //  remove whitespace-only lines
-            {
-                while (!(/\S/.test(items[a])))
-                {
-                    items.splice(a, 1);
-                    n -= 1;
-                }
-            }
             worst = n * Math.ceil(log2(n * 3 / 4)) - Math.floor((1 << Math.floor(log2(n * 6))) / 3) + Math.floor(log2(n * 6) / 2);
 
             //  array-shuffling one-liner by Jonas Raoni Soares Silva:  http://jsfromhell.com/array/shuffle
