@@ -237,23 +237,15 @@
         showHTML("<p>Which do you prefer?</p><h6><i>(If you're truly indifferent, then pick either one; they'll end up adjacent in the results, based on your other choices.)</i></h6>" + "<p>Progress: " + getProgress() + "<br><center>" + makeButton(x, y) + " OR " + makeButton(y, x) + "</center>");
     }
 
-    function sanitize(foo, useWhitelist)
-    {
-        if (useWhitelist)
-        {
-            // currently, only <font> and <img> are allowed to have attributes
-            var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|font |\\/font>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img |\\/img>';
-            var regex = '<(?!(' + WHITELIST + '))[^>]*>';
-            foo = foo.replace(new RegExp(regex, 'gi'), '');
-            regex = '<[^>]*\\([^>]*>';
-            foo = foo.replace(new RegExp(regex, 'gi'), '');
-        }
-        else
-        {
-            var regex = '<[^>]*>';
-            foo = foo.replace(new RegExp(regex, 'gi'), '');
-        }
-        return foo;
+    function sanitize(ustr, bool_useWhitelist) {
+      if (bool_useWhitelist) {
+        // special handling for <img src="...">
+        var WHITELIST = '\\/?p>|\\/?h1>|\\/?h2>|\\/?h3>|\\/?h4>|\\/?h5>|\\/?h6>|\\/?ol>|\\/?ul>|\\/?li>|\\/?blockquote>|\\/?center>|\\/?pre>|\\/?em>|\\/?strong>|\\/?code>|\\/?samp>|\\/?kbd>|\\/?var>|\\/?b>|\\/?i>|\\/?u>|\\/?small>|\\/?s>|\\/?big>|\\/?strike>|\\/?tt>|\\/?br>|\\/?bdo>|\\/?del>|\\/?ins>|\\/?sub>|\\/?sup>|\\/?wbr>|img src="(https?:)?[-_.~A-Za-z0-9/#%?=&+*! ]*"( \\/)?>|\\/img>';
+        var regex = '<(?!(' + WHITELIST + '))[^>]*>';
+        return ustr.replace(new RegExp(regex, 'gi'), '');
+      }
+      var regex = '<[^>]*>';
+      return ustr.replace(new RegExp(regex, 'gi'), '');
     }
 
     function getList()
@@ -333,7 +325,10 @@
                 results[i] = items[ids[n - i - 1]];
             }
             items = results;
-            if (window.history.pushState)   // only works in some modern browsers
+
+            // window.history.pushState only works in some modern browsers
+            // also doesn't work with file://
+            try
             {
                 var myList = items.join("\n");
                 myList = saw.lzw.encode(myList);
@@ -341,15 +336,13 @@
                 myList = myList.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
                 whoseResults = Base64.encode(whoseResults);
                 whoseResults = whoseResults.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "%3D");
-                try // may fail when using file://
-                {
-                    window.history.pushState("", "", "/preference.html?" + whoseResults + "&" + myList);
-                }
-                catch (e)
-                {
-                    // in that case, fail silently
-                }
+                window.history.pushState("", "", "/preference.html?" + whoseResults + "&" + myList);
             }
+            catch (e)
+            {
+                // fail silently
+            }
+
             showHTML("<p>Results, starting from highest preferred:</p><br><p>" + results.join("</p><p>") + "</p><br><div id=\"sharing\">Name: <input size=\"12\" id=\"myname\" value=\"anonymous\"></input> <button type=\"button\" onclick=\"makeResultsURL()\">Generate link to these results...</button></div>");
         }
         else
