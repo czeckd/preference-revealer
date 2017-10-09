@@ -73,17 +73,15 @@ export class RevealerComponent implements OnInit {
 
 	}
 
-	log2(x:number) : number {
+	private log2(x:number) : number {
 		return Math.log(x) / Math.LN2;
 	}
 
 	submitList() {
-		this.ngOnInit();
-//console.log(this.list);
+		this.stack = [ Sort.PSORT ];
+		this.done = false;
 
 		this.items = this.list.split('\n');
-//		this.originalItems = this.items.slice(0);
-
 		this.itemsLen = this.items.length;
 
 		for (let a = 0; a < this.itemsLen; a += 1) {
@@ -99,7 +97,7 @@ export class RevealerComponent implements OnInit {
 
 			// TODO: Use lodash shuffle
 
-			//  array-shuffling one-liner by Jonas Raoni Soares Silva:  http://jsfromhell.com/array/shuffle
+			// array-shuffling one-liner by Jonas Raoni Soares Silva:  http://jsfromhell.com/array/shuffle
 			for (let j, x, i = this.itemsLen; i; j = Math.floor(Math.random() * i), x = this.items[--i], this.items[i] = this.items[j], this.items[j] = x);
 
 			this.aux = new Array(this.itemsLen);
@@ -107,9 +105,6 @@ export class RevealerComponent implements OnInit {
 				this.aux[k] = k;
 			}
 			this.beginStep();
-		} else {
-//			let myList = document.getElementById('list');
-//			myList.value = myList.value + '  O_o';
 		}
 	}
 
@@ -118,8 +113,8 @@ export class RevealerComponent implements OnInit {
 
 		switch (this.action) {
 		case Sort.PSORT:
-				//  expect this.aux to be array of indices of this.items to sort
-				//  outer layer still references this.aux, so don't destroy
+			//  expect this.aux to be array of indices of this.items to sort
+			//  outer layer still references this.aux, so don't destroy
 			if (this.aux.length > 1) {
 				if (this.aux.length % 2 == 1) {
 					this.stack.push(this.aux[0]);
@@ -136,12 +131,12 @@ export class RevealerComponent implements OnInit {
 			}
 			break;
 		case Sort.KEYALIGN:  //  reorder losers to match sorted winners
-				//  expect this.stack[-1][0] to be array of winners of pairwise comparisons
-				//  expect this.stack[-1][1] to be array of losers of pairwise comparisons, plus odd element if exists
-				//  expect aux to be sorted array of winners
+			//  expect this.stack[-1][0] to be array of winners of pairwise comparisons
+			//  expect this.stack[-1][1] to be array of losers of pairwise comparisons, plus odd element if exists
+			//  expect aux to be sorted array of winners
 			let w = this.aux.length;
 			this.aux = [this.aux, new Array(w), new Array(w), [0, 1, 0, 0]];  //  first insertion
-				//  this.aux[0] is now the main chain
+			//  this.aux[0] is now the main chain
 			let oldaux = this.stack.pop();
 			let keydict = new Array(this.itemsLen);
 
@@ -219,7 +214,6 @@ export class RevealerComponent implements OnInit {
 
 
 	endStep(x:Sort, y:Sort) {
-console.log('endStep(' + x + ', ' + y + ')');
 		this.comps++;
 
 		switch (this.action) {
@@ -285,9 +279,6 @@ console.log('endStep(' + x + ', ' + y + ')');
 	}
 
 	showResults(ids:Sort, myResults:boolean) {
-
-console.log(ids);
-
 		this.btnOne = undefined;
 		this.btnTwo = undefined;
 		this.btnOneFunc = undefined;
@@ -307,35 +298,18 @@ console.log(ids);
 	makeUrl(isResults:boolean) {
 		this.items = this.list.split('\n');
 
-//		const itm = (isResults ? this.results : this.items);
 		const nm = (isResults ? this.name : undefined);
 
 		try {
-//			const data = lzwCompress.pack({ items: itm, name: nm });
 			const data = lzwCompress.pack({ items: this.items, results: this.action, name: nm });
-			this.encoded = this.baseUrl + '?data=' + Base64.encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '%3D');
+			this.encoded = this.baseUrl + '/preference-revealer/dist?data=' + Base64.encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '%3D');
 		}
 		catch (e) {
 			console.error(e);
 		}
 
 	}
-/*
-	makeResultsUrl() {
-		try {
-			const data = lzwCompress.pack({ items: this.results, name: this.name });
-			this.encoded = Base64.encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '%3D');
-
-			console.log(this.encoded);
-		}
-		catch (e) {
-			console.error(e);
-		}
-	}
-*/
-
 	about(e:MouseEvent) {
-console.log(e);
 		e.stopPropagation();
 
 		this.showAbout = true;
