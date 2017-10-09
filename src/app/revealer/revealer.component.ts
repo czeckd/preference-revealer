@@ -74,6 +74,11 @@ export class RevealerComponent implements OnInit {
 
 	}
 
+	restart() {
+		this.stack = [ Sort.PSORT ];
+		this.done = false;
+	}
+
 	private log2(x:number) : number {
 		return Math.log(x) / Math.LN2;
 	}
