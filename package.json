@@ -6,7 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod"
+    "build": "ng build --prod --base-href /preference-revealer/dist/"
   },
   "private": true,
   "dependencies": {
