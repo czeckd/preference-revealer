@@ -49,9 +49,7 @@ export class RevealerComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.stack = [ Sort.PSORT ];
-		this.done = false;
-
+		this.restart();
 		this.baseUrl = location.origin;
 
 		this.route.queryParams.subscribe( params => {
@@ -75,6 +73,7 @@ export class RevealerComponent implements OnInit {
 	}
 
 	restart() {
+		this.comps = 0;
 		this.stack = [ Sort.PSORT ];
 		this.done = false;
 	}

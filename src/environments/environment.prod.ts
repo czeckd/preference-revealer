@@ -1,4 +1,4 @@
 export const environment = {
 	production: true,
-	directory: 'preference-revealer/dist'
+	directory: '/preference-revealer/dist'
 };
