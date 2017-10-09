@@ -1,0 +1,101 @@
+<nav class="top">
+	<div class="container full nav-box">
+		<h3 class="logo"><a [routerLink]="['']">Preference Revealer</a></h3>
+		<p class="about" (click)="showAbout=true">About</p>
+	</div>
+</nav>
+
+
+<div *ngIf="!btnOne && !done" class="container">
+	<p class="lead">The preference revealer sorts a list of items by asking you to make comparisons between pairs.</p>
+	<p>Enter your items in the area below with each entry on a separate line.</p>
+
+
+	<form *ngIf="!btnOne && !done">
+		<div class="full">
+			<textarea [(ngModel)]="list" name="list"></textarea>
+		</div>
+
+		<div class="btn-bar">
+			<button type="button" class="btn btn-primary" (click)="submitList()" [disabled]="!list">Reveal your preferences</button>
+			<span>or</span>
+			<button type="button" class="btn btn-info" (click)="makeUrl(false)" [disabled]="!list">Share your list</button>
+		</div>
+
+		<div class="form-group" *ngIf="encoded">
+			<input type="text" class="form-control" [(ngModel)]="encoded" name="url" readonly>
+		</div>
+
+	</form>
+</div>
+
+<div *ngIf="btnOne" class="container">
+	<div class="progress">
+		<div class="progress-bar progress-bar-success" [ngStyle]="{width: getProgress()}">{{getProgress()}}</div>
+	</div>
+
+	<div class="full choice btn-bar">
+		<button class="btn btn-default" (click)="btnOneFunc()">{{btnOne}}</button>
+		<span>or</span>
+		<button class="btn btn-default" (click)="btnTwoFunc()">{{btnTwo}}</button>
+	</div>
+</div>
+
+<div *ngIf="done" class="container">
+	<h3 *ngIf="name">{{name}}&#8217;s results:</h3>
+	<h3 *ngIf="!name">Your results:</h3>
+	<div class="full">
+		<ol>
+			<li *ngFor="let i of results">{{i}}</li>
+		</ol>
+	</div>
+
+	<h3>Share and enjoy!</h3>
+	<p class="lead">Options to share your results or list:</p>
+
+	<form>
+		<div class="form-group">
+			<label>Name</label>
+			<input type="text" [(ngModel)]="name" name="name" class="form-control">
+		</div>
+		<div class="btn-bar">
+			<button type="button" class="btn btn-primary" (click)="makeUrl(true)" [disabled]="!name">Link to your results</button>
+			<span>or</span>
+			<button type="button" class="btn btn-info" (click)="makeUrl(false)" >Share your list</button>
+		</div>
+
+		<div class="form-group" *ngIf="encoded">
+			<input type="text" class="form-control" [(ngModel)]="encoded" name="url" readonly>
+		</div>
+
+	</form>
+</div>
+
+<div class="modal" *ngIf="showAbout" (click)="showAbout=false">
+	<div class="modal-dialog" (click)="$event.stopPropagation()">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" (click)="showAbout=false"><span>&times;</span></button>
+				<h3>About Preference Revealer</h3>
+			</div>
+			<div class="modal-body">
+				<p>Preference Revealer sorts a list of items by asking you to make pairwise comparisons.
+					(This level of decomposition isn’t always appropriate, but sometimes it’s invaluable.)</p>
+
+				<p>Inspired by <a href="http://mainyan.sakura.ne.jp/thsort.html" target="_blank">Tōhō Sort</a>. 
+					Hat tip to pluffei for suggesting a general-purpose version. Many thanks to Knuth for his in-depth discussion of minimal-comparison sorting.</p>
+
+				<p>Unlike Tōhō Sort, which uses merge sort, Preference Revealer uses the Ford-Johnson algorithm, a.k.a. merge insertion, 
+					as described in Knuth’s <em>The Art of Computer Programming, vol. 3: Sorting and Searching</em>.</p>
+
+				<p>The original <a href="https://github.com/Xomnom/Preference-Revealer" 
+					target="_blank">Preference Revealer</a> code was written by Michael de Cardery (<a href="https://github.com/Xomnom" target="_blank">Xomnom</a>) and was <a href="https://github.com/czeckd/preference-revealer" target="_blank">updated</a> by David Czeck (<a href="https://github.com/czeckd" target="_blank">czeckd</a>).</p>
+				<p>The content of this site is licensed under the Creative Commons Attribution 3.0 Unported License.</p>				
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" (click)="showAbout=false">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-backdrop fade in" *ngIf="showAbout"></div>

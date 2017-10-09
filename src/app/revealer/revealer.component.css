@@ -1,0 +1,61 @@
+nav {
+	background: black;
+	min-height: 36px;
+	color: #9d9d9d;
+	margin-bottom: 16px;
+}
+
+.nav-box {
+	justify-content: space-between;
+	padding: 10px;
+	user-select: none;
+}
+.logo {
+	flex-grow: 2;
+	margin: 0;
+}
+
+.logo a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.about {
+	position: relative;
+	top: 6px;
+	cursor: pointer;
+}
+
+div.full {
+	display: flex;
+}
+
+div.btn-bar {
+	justify-content: center;
+	margin-bottom: 16px;
+}
+
+textarea {
+	flex-grow: 2;
+	height: 24em;
+	padding: 5px;
+	margin-bottom: 16px;
+}
+
+div.choice span {
+	margin: 10px;
+	user-select: none;
+}
+
+div.choice button {
+	min-width: 200px;
+}
+
+a {
+	user-select: none;
+	cursor: pointer;
+}
+
+div.modal {
+	display: block;
+}
