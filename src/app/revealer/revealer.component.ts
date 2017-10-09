@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { Base64 } from 'js-base64';
 
+import { environment } from '../../environments/environment';
+
 declare var lzwCompress:any;
 
 
@@ -57,7 +59,6 @@ export class RevealerComponent implements OnInit {
 			const list = params['data'];
 			if (list) {
 				let data = lzwCompress.unpack(Base64.decode(list).split(','));
-
 				if (data.items) {
 					this.items = data.items;
 					this.list = data.items.join('\n');
@@ -278,7 +279,7 @@ export class RevealerComponent implements OnInit {
 		return '0%';
 	}
 
-	showResults(ids:Sort, myResults:boolean) {
+	showResults(ids:any, myResults:boolean) {
 		this.btnOne = undefined;
 		this.btnTwo = undefined;
 		this.btnOneFunc = undefined;
@@ -297,22 +298,23 @@ export class RevealerComponent implements OnInit {
 
 	makeUrl(isResults:boolean) {
 		this.items = this.list.split('\n');
-
+		let results = undefined;
 		const nm = (isResults ? this.name : undefined);
 
+		if (isResults) {
+			results = [];
+			for (let i = 0; i < this.itemsLen; i += 1) {
+				results.unshift(this.items.indexOf(this.results[i]));
+			}
+		}
+
 		try {
-			const data = lzwCompress.pack({ items: this.items, results: this.action, name: nm });
-			this.encoded = this.baseUrl + '/preference-revealer/dist?data=' + Base64.encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '%3D');
+			const data = lzwCompress.pack({ items: this.items, results: results, name: nm });
+			this.encoded = this.baseUrl + environment.directory + '?data=' + Base64.encode(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '%3D');
 		}
 		catch (e) {
 			console.error(e);
 		}
-
 	}
-	about(e:MouseEvent) {
-		e.stopPropagation();
 
-		this.showAbout = true;
-		this.collapse = true;
-	}
 }
