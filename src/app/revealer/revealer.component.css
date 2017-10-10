@@ -35,6 +35,10 @@ div.btn-bar {
 	margin-bottom: 16px;
 }
 
+div.btn-bar button {
+	margin-bottom: 8px;
+}
+
 textarea {
 	flex-grow: 2;
 	height: 24em;
@@ -48,14 +52,18 @@ div.choice span {
 }
 
 div.choice button {
-	min-width: 200px;
+	min-width: 100px;
+	white-space: normal; /* !important;*/
+	word-wrap: break-word; 
 }
 
 a {
 	user-select: none;
 	cursor: pointer;
+	word-wrap: break-word; 
 }
 
 div.modal {
 	display: block;
 }
+

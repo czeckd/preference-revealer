@@ -23,7 +23,7 @@
 		</div>
 
 		<div class="form-group" *ngIf="encoded">
-			<a [href]="encoded">{{encoded}}</a>
+			<a [href]="encoded">{{baseUrl}}/...</a>
 		</div>
 
 	</form>
@@ -51,7 +51,7 @@
 	</div>
 
 	<h3>Share and enjoy!</h3>
-	<p class="lead">Options to share your results or list:</p>
+	<p>Options to share your results or list:</p>
 
 	<form>
 		<div class="form-group">
@@ -76,21 +76,16 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" (click)="showAbout=false"><span>&times;</span></button>
-				<h3>About Preference Revealer</h3>
+				<h4>About</h4>
 			</div>
 			<div class="modal-body">
-				<p>Preference Revealer sorts a list of items by asking you to make pairwise comparisons.
-					(This level of decomposition isn’t always appropriate, but sometimes it’s invaluable.)</p>
-
-				<p>Inspired by <a href="http://mainyan.sakura.ne.jp/thsort.html" target="_blank">Tōhō Sort</a>. 
-					Hat tip to pluffei for suggesting a general-purpose version. Many thanks to Knuth for his in-depth discussion of minimal-comparison sorting.</p>
-
-				<p>Unlike Tōhō Sort, which uses merge sort, Preference Revealer uses the Ford-Johnson algorithm, a.k.a. merge insertion, 
+				<p>Preference Revealer sorts a list of items by asking you to make pairwise comparisons. Unlike its inspiration, 
+					<a href="http://mainyan.sakura.ne.jp/thsort.html" target="_blank">Tōhō Sort</a>, which uses merge sort, Preference Revealer uses the Ford-Johnson algorithm, a.k.a. merge insertion, 
 					as described in Knuth’s <em>The Art of Computer Programming, vol. 3: Sorting and Searching</em>.</p>
 
 				<p>The original <a href="https://github.com/Xomnom/Preference-Revealer" 
 					target="_blank">Preference Revealer</a> code was written by Michael de Cardery (<a href="https://github.com/Xomnom" target="_blank">Xomnom</a>) and was <a href="https://github.com/czeckd/preference-revealer" target="_blank">updated</a> by David Czeck (<a href="https://github.com/czeckd" target="_blank">czeckd</a>).</p>
-				<p>The content of this site is licensed under the Creative Commons Attribution 3.0 Unported License.</p>				
+				<p>The content of this site is licensed under the <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank">Creative Commons Attribution 3.0 Unported License</a>.</p>				
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" (click)="showAbout=false">Close</button>
