@@ -16,7 +16,7 @@
 			<textarea [(ngModel)]="list" name="list"></textarea>
 		</div>
 
-		<div class="btn-bar">
+		<div class="choice btn-bar">
 			<button type="button" class="btn btn-primary" (click)="submitList()" [disabled]="!list">Reveal your preferences</button>
 			<span>or</span>
 			<button type="button" class="btn btn-info" (click)="makeUrl(false)" [disabled]="!list">Share your list</button>
@@ -35,9 +35,9 @@
 	</div>
 
 	<div class="full choice btn-bar">
-		<button class="btn btn-default" (click)="btnOneFunc()">{{btnOne}}</button>
+		<button class="btn btn-default" (click)="btnOneFunc($event)">{{btnOne}}</button>
 		<span>or</span>
-		<button class="btn btn-default" (click)="btnTwoFunc()">{{btnTwo}}</button>
+		<button class="btn btn-default" (click)="btnTwoFunc($event)">{{btnTwo}}</button>
 	</div>
 </div>
 
@@ -58,7 +58,7 @@
 			<label>Name</label>
 			<input type="text" [(ngModel)]="name" name="name" class="form-control">
 		</div>
-		<div class="btn-bar">
+		<div class="choice btn-bar">
 			<button type="button" class="btn btn-primary" (click)="makeUrl(true)" [disabled]="!name">Link to your results</button>
 			<span>or</span>
 			<button type="button" class="btn btn-info" (click)="makeUrl(false)" >Share your list</button>
