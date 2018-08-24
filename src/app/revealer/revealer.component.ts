@@ -37,12 +37,12 @@ export class RevealerComponent implements OnInit {
 	comps = 0;
 	worst:number;
 
-	btnOne:string;
-	btnTwo:string;
+	btnOne: string;
+	btnTwo: string;
 	btnOneFunc;
 	btnTwoFunc;
 	name = '';
-	encoded:string;
+	encoded: string;
 	done = false;
 
 	constructor(vcr:ViewContainerRef, private location:Location, private route:ActivatedRoute, private router:Router) {
@@ -268,11 +268,15 @@ export class RevealerComponent implements OnInit {
 	showChoices(x:Sort, y:Sort) {
 		this.btnOne = this.items[x];
 		this.btnTwo = this.items[y];
-		this.btnOneFunc = function() {
+		this.btnOneFunc = function(e: MouseEvent) {
 			this.endStep(x, y);
+			const elem = e.target as HTMLElement;
+			elem.blur();
 		}
-		this.btnTwoFunc = function() {
+		this.btnTwoFunc = function(e: any) {
 			this.endStep(y, x);
+			const elem = e.target as HTMLElement;
+			elem.blur();
 		}
 	}
 
